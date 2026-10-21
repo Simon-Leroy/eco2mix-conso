@@ -30,7 +30,7 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
 @click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
 @click.option('--pg-db', default='eco2mix_national', help='PostgreSQL database name')
 @click.option('--target-table', default='energy_data', help='Target table name')
-@click.option('--path', default='../../eco2mix-national.csv', help='Path to the eco2mix CSV file')
+@click.option('--path', default='../data/eco2mix-national.csv', help='Path to the eco2mix CSV file')
 @click.option('--chunksize', default=200, type=int, help='Rows per chunk')
 def run(pg_user, pg_pass, pg_host, pg_port, pg_db, target_table, path, chunksize):
     engine = create_engine(f'postgresql+psycopg://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}')
