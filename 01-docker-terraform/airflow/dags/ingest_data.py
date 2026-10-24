@@ -105,11 +105,25 @@ def eco2mix_ingestion():
             commit_every=len(rows),
         )
         print(f"{len(rows)} lignes chargées depuis {path}")
+        return len(rows)
+
+    @task
+    def check(expected_rows: int, data_interval_start=None, data_interval_end=None):
+        hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
+        in_db = hook.get_first(
+            "SELECT count(*) FROM raw_eco2mix WHERE date_heure >= %s AND date_heure < %s",
+            parameters=(data_interval_start, data_interval_end),
+        )[0]
+
+        if in_db != expected_rows:
+            raise ValueError(f"Attendu {expected_rows} en base, trouvé {in_db}")
+        print(f"OK : {in_db} lignes en base pour la période")
 
     create = create_table()
     path = fetch()
     loaded = load(path)
     create >> loaded
+    check(loaded)
 
 
 eco2mix_ingestion()
