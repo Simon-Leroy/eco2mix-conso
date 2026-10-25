@@ -1,58 +1,15 @@
-import requests
 import json
 from pathlib import Path
 from datetime import datetime, timedelta
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from airflow.sdk import dag, task
 from airflow.timetables.interval import CronDataIntervalTimetable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from common.eco2mix_api import make_session, fetch_all
 
 API_URL = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-cons-def/records"
 RAW_DIR = Path("/opt/airflow/data/raw/eco2mix")
 SQL_DIR = Path(__file__).parent / "sql"
 POSTGRES_CONN_ID = "eco2mix_postgres"
-
-def make_session():
-    """Crée une session HTTP qui réessaie automatiquement en cas d'erreur temporaire.
-
-    Une Session réutilise la connexion entre les appels (plus rapide que requests.get)
-    et le HTTPAdapter y attache la logique de retry, ici pour toutes les URL en https.
-    """
-    retry = Retry(
-        total=3,
-        backoff_factor=1,  # délai de retry -> backoff * 2^(n - 1)
-        status_forcelist=[429, 500, 502, 503, 504],  # codes sur les lesques on fait un retry
-        allowed_methods=["GET"],
-    )
-    session = requests.Session()
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    return session
-
-
-PAGE_SIZE = 100
-
-
-def fetch_all(session, where):
-    """Récupère toutes les lignes qui correspondent au filtre, page par page"""
-    records = []
-    offset = 0
-    while True:
-        params = {
-            "limit": PAGE_SIZE,
-            "offset": offset,
-            "where": where,
-            "order_by": "date_heure",
-        }
-        response = session.get(API_URL, params=params, timeout=10)
-        response.raise_for_status()
-        payload = response.json()
-
-        records.extend(payload["results"])
-        offset += PAGE_SIZE
-        if offset >= payload["total_count"]:
-            break
-    return records
 
 
 @dag(
@@ -76,7 +33,7 @@ def eco2mix_ingestion():
         where = f'date_heure >= "{start}" AND date_heure < "{end}"'
 
         with make_session() as session:
-            records = fetch_all(session, where)
+            records = fetch_all(session, API_URL, where)
 
         RAW_DIR.mkdir(parents=True, exist_ok=True)
         path = RAW_DIR / f"{data_interval_start:%Y-%m-%dT%H-%M}.json"
