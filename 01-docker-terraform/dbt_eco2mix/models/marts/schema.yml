@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: eco2mix
+    description: Une ligne par créneau de 15 minutes. Le consolidé est prioritaire sur le temps réel.
+    columns:
+      - name: date_heure
+        description: Début du créneau de 15 minutes (UTC)
+        data_tests:
+          - unique
+          - not_null
+      - name: source
+        description: Provenance de la ligne
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['consolide', 'temps_reel']
