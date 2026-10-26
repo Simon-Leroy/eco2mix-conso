@@ -25,7 +25,6 @@ jobs:
           python-version: "3.13"
       - name: Installer Airflow (mêmes versions que l'image du compose)
         run: |
-          uv venv
           uv pip install \
             "apache-airflow==3.3.2" \
             apache-airflow-providers-postgres \
