@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      # uvx lance ruff sans l'ajouter aux dépendances du projet
+      - run: uvx ruff check 01-docker-terraform/airflow/dags
+
+  dags:
+    name: Import des DAGs Airflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - name: Installer Airflow (mêmes versions que l'image du compose)
+        run: |
+          uv venv
+          uv pip install \
+            "apache-airflow==3.3.2" \
+            apache-airflow-providers-postgres \
+            requests \
+            --constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.3.2/constraints-3.13.txt
+      - name: Charger les DAGs
+        run: uv run python .github/scripts/check_dags.py
+
+  dbt:
+    name: dbt parse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Installer dbt (versions du uv.lock)
+        run: uv sync --locked --project 01-docker-terraform/pipeline
+      - name: Vérifier que le projet dbt compile
+        working-directory: 01-docker-terraform/dbt_eco2mix
+        run: uv run --project ../pipeline dbt parse --profiles-dir ci

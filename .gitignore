@@ -5,3 +5,5 @@ __pycache__/
 01-docker-terraform/data/
 01-docker-terraform/.env
 01-docker-terraform/airflow/logs/
+01-docker-terraform/logs/
+
