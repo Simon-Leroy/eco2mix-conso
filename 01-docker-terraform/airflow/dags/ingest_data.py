@@ -1,10 +1,11 @@
 import json
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
+
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.sdk import dag, task
 from airflow.timetables.interval import CronDataIntervalTimetable
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from common.eco2mix_api import make_session, fetch_all
+from common.eco2mix_api import fetch_all, make_session
 
 API_URL = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-cons-def/records"
 RAW_DIR = Path("/opt/airflow/data/raw/eco2mix")

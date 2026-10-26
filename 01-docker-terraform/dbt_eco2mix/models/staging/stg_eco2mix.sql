@@ -1,7 +1,41 @@
 select
     date_heure,
+    payload->>'perimetre' as perimetre,
     payload->>'nature' as nature,
-    (payload->>'consommation')::numeric as consommation,
-    (payload->>'nucleaire')::numeric as nucleaire,
-    (payload->>'eolien')::numeric as eolien
+    nullif(payload->>'consommation', 'ND')::numeric as consommation,
+    nullif(payload->>'prevision_j1', 'ND')::numeric as prevision_j1,
+    nullif(payload->>'prevision_j', 'ND')::numeric as prevision_j,
+    nullif(payload->>'fioul', 'ND')::numeric as fioul,
+    nullif(payload->>'charbon', 'ND')::numeric as charbon,
+    nullif(payload->>'gaz', 'ND')::numeric as gaz,
+    nullif(payload->>'nucleaire', 'ND')::numeric as nucleaire,
+    nullif(payload->>'eolien', 'ND')::numeric as eolien,
+    nullif(payload->>'solaire', 'ND')::numeric as solaire,
+    nullif(payload->>'hydraulique', 'ND')::numeric as hydraulique,
+    nullif(payload->>'pompage', 'ND')::numeric as pompage,
+    nullif(payload->>'bioenergies', 'ND')::numeric as bioenergies,
+    nullif(payload->>'ech_physiques', 'ND')::numeric as ech_physiques,
+    nullif(payload->>'taux_co2', 'ND')::numeric as taux_co2,
+    nullif(payload->>'ech_comm_angleterre', 'ND')::numeric as ech_comm_angleterre,
+    nullif(payload->>'ech_comm_espagne', 'ND')::numeric as ech_comm_espagne,
+    nullif(payload->>'ech_comm_italie', 'ND')::numeric as ech_comm_italie,
+    nullif(payload->>'ech_comm_suisse', 'ND')::numeric as ech_comm_suisse,
+    nullif(payload->>'ech_comm_allemagne_belgique', 'ND')::numeric as ech_comm_allemagne_belgique,
+    nullif(payload->>'fioul_tac', 'ND')::numeric as fioul_tac,
+    nullif(payload->>'fioul_cogen', 'ND')::numeric as fioul_cogen,
+    nullif(payload->>'fioul_autres', 'ND')::numeric as fioul_autres,
+    nullif(payload->>'gaz_tac', 'ND')::numeric as gaz_tac,
+    nullif(payload->>'gaz_cogen', 'ND')::numeric as gaz_cogen,
+    nullif(payload->>'gaz_ccg', 'ND')::numeric as gaz_ccg,
+    nullif(payload->>'gaz_autres', 'ND')::numeric as gaz_autres,
+    nullif(payload->>'hydraulique_fil_eau_eclusee', 'ND')::numeric as hydraulique_fil_eau_eclusee,
+    nullif(payload->>'hydraulique_lacs', 'ND')::numeric as hydraulique_lacs,
+    nullif(payload->>'hydraulique_step_turbinage', 'ND')::numeric as hydraulique_step_turbinage,
+    nullif(payload->>'bioenergies_dechets', 'ND')::numeric as bioenergies_dechets,
+    nullif(payload->>'bioenergies_biomasse', 'ND')::numeric as bioenergies_biomasse,
+    nullif(payload->>'bioenergies_biogaz', 'ND')::numeric as bioenergies_biogaz
 from {{ source('raw', 'raw_eco2mix') }}
+-- Le jour du passage à l'heure d'été, la source contient aussi des créneaux à
+-- l'heure locale inexistante (02:00 à 02:45), qui dupliquent la même date_heure UTC.
+-- On ne garde que les lignes dont l'heure locale est la vraie heure de Paris.
+where heure_locale = to_char(date_heure at time zone 'Europe/Paris', 'HH24:MI')
