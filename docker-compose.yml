@@ -1,3 +1,7 @@
+# Nom du projet Docker fixé ici : sinon Compose le déduit du nom du dossier, et les
+# conteneurs et volumes changeraient de nom si on renomme ou déplace le projet.
+name: eco2mix
+
 x-airflow-common: &airflow-common
   image: ${AIRFLOW_IMAGE_NAME:-eco2mix-airflow:3.3.2}
   build:
@@ -78,8 +82,8 @@ services:
     command:
       - -c
       - |
-        mkdir -p /opt/airflow/{logs,dags,plugins,config}
-        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/{logs,dags,plugins,config}
+        mkdir -p /opt/airflow/{logs,dags,plugins,config,data}
+        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/{logs,dags,plugins,config,data}
         exec /entrypoint airflow version
     environment:
       <<: *airflow-common-env

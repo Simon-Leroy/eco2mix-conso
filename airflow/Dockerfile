@@ -1,6 +1,6 @@
 FROM apache/airflow:3.3.2
 
-# Versions de dbt : à garder alignées avec 01-docker-terraform/pipeline/uv.lock
+# Versions de dbt : à garder alignées avec pipeline/uv.lock
 ARG DBT_CORE_VERSION=1.12.6
 ARG DBT_POSTGRES_VERSION=1.11.0
 

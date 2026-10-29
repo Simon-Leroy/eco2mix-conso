@@ -3,7 +3,7 @@ import sys
 
 from airflow.dag_processing.dagbag import DagBag
 
-DAGS_FOLDER = "01-docker-terraform/airflow/dags"
+DAGS_FOLDER = "airflow/dags"
 
 # Comme le fait Airflow en vrai : le dossier des DAGs est dans le chemin d'import,
 # ce qui permet `from common.eco2mix_api import ...`.
