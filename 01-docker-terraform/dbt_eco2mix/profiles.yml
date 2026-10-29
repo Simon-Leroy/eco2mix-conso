@@ -1,0 +1,17 @@
+# Profil dbt versionné : il ne contient aucun secret en dur, seulement des variables
+# d'environnement avec des valeurs par défaut pour le développement local.
+# - En local (dbt lancé depuis ce dossier) : les défauts pointent vers localhost.
+# - Dans Airflow : docker-compose.yml définit DBT_HOST=postgres, etc.
+# (La CI utilise son propre profil, ci/profiles.yml.)
+dbt_eco2mix:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PORT', '5432') | as_number }}"
+      user: "{{ env_var('DBT_USER', 'root') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'root') }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'eco2mix_national') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'public') }}"
+      threads: 4

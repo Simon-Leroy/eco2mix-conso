@@ -1,0 +1,3 @@
+# Le Dockerfile ne copie aucun fichier : on n'envoie rien au build.
+# Sans cette ligne, dags/, logs/ et plugins/ seraient envoyés à Docker pour rien.
+*

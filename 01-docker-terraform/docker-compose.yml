@@ -1,5 +1,7 @@
 x-airflow-common: &airflow-common
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.3.2}
+  image: ${AIRFLOW_IMAGE_NAME:-eco2mix-airflow:3.3.2}
+  build:
+    context: ./airflow
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
@@ -12,12 +14,21 @@ x-airflow-common: &airflow-common
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_CONN_ECO2MIX_POSTGRES: postgresql://root:root@postgres:5432/eco2mix_national
+    # dbt : connexion lue par dbt_eco2mix/profiles.yml
+    DBT_HOST: postgres
+    DBT_USER: root
+    DBT_PASSWORD: root
+    DBT_DBNAME: eco2mix_national
+    # Le projet dbt est monté en lecture seule : dbt écrit ses fichiers ailleurs
+    DBT_TARGET_PATH: /tmp/dbt/target
+    DBT_LOG_PATH: /tmp/dbt/logs
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/config:/opt/airflow/config
     - ./airflow/plugins:/opt/airflow/plugins
     - ./data:/opt/airflow/data
+    - ./dbt_eco2mix:/opt/airflow/dbt_eco2mix:ro
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     airflow-db:
