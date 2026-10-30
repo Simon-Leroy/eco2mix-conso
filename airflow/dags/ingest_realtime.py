@@ -5,6 +5,7 @@ from pathlib import Path
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.sdk import dag, get_current_context, task
 from airflow.timetables.interval import CronDataIntervalTimetable
+from common.assets import RAW_ECO2MIX_TR
 from common.eco2mix_api import fetch_all, make_session
 
 API_URL = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-tr/records"
@@ -70,7 +71,7 @@ def eco2mix_realtime_ingestion():
         print(f"{len(rows)} lignes chargées depuis {fetched['path']}")
         return {"rows": len(rows), "start": fetched["start"]}
 
-    @task
+    @task(outlets=[RAW_ECO2MIX_TR])
     def check(loaded: dict):
         hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         in_db = hook.get_first(

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.sdk import dag
+from common.assets import RAW_ECO2MIX, RAW_ECO2MIX_TR
 
 # Chemin du projet dbt dans le conteneur (monté par docker-compose.yml, en lecture seule)
 DBT_PROJECT_DIR = "/opt/airflow/dbt_eco2mix"
@@ -9,7 +10,7 @@ DBT_PROJECT_DIR = "/opt/airflow/dbt_eco2mix"
 
 @dag(
     dag_id="dbt_build",
-    schedule=None,  # lancé à la main pour l'instant, branché sur l'ingestion à l'étape suivante
+    schedule=RAW_ECO2MIX | RAW_ECO2MIX_TR,
     start_date=datetime(2026, 1, 1),
     catchup=False,
     # Une seule exécution à la fois : deux dbt en parallèle réécriraient les mêmes tables
