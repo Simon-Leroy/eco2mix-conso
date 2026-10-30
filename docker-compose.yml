@@ -49,6 +49,9 @@ services:
       - "eco2mix_national_data:/var/lib/postgresql"
     ports:
       - "5432:5432"
+    # Sans cette ligne, Postgres reste éteint après un redémarrage de la machine ou de Docker,
+    # alors qu'Airflow (restart: always) repart : les DAGs échouent alors sur "resolve host 'postgres'".
+    restart: always
 
   pgadmin:
     image: dpage/pgadmin4
@@ -59,6 +62,7 @@ services:
       - "pgadmin_data:/var/lib/pgadmin"
     ports:
       - "8085:80"
+    restart: always
 
   # ---------- Airflow (LocalExecutor) ----------
   airflow-db:
